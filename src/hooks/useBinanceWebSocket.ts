@@ -24,7 +24,7 @@ export const useBinanceWebSocket = (streams: string[]) => {
   useEffect(() => {
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-    let intervalClose = false;
+    let intentionalClose = false;
 
     const unsubscribe = (socket: WebSocket, params: string[]) => {
       if (socket.readyState === WebSocket.OPEN && params.length > 0) {
@@ -37,16 +37,18 @@ export const useBinanceWebSocket = (streams: string[]) => {
         );
       }
     };
+
     const connect = () => {
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
 
-      intervalClose = false;
+      intentionalClose = false;
 
       const socket = new WebSocket(BINANCE_WS_URL);
       ws = socket;
+
       socket.onopen = () => {
         const currentStreams = streamsRef.current;
         if (currentStreams.length > 0) {
@@ -98,10 +100,9 @@ export const useBinanceWebSocket = (streams: string[]) => {
       };
 
       socket.onclose = () => {
-        if (intervalClose) return;
+        if (intentionalClose) return;
 
         console.log('WebSocket disconnected, trying to reconnect in', RECONNECT_DELAY);
-
         reconnectTimer = setTimeout(connect, RECONNECT_DELAY);
       };
     };
@@ -109,13 +110,14 @@ export const useBinanceWebSocket = (streams: string[]) => {
     connect();
 
     return () => {
-      intervalClose = true;
+      intentionalClose = true;
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
       if (ws) {
         unsubscribe(ws, streamsRef.current);
+        ws.onerror = null;
         ws.close();
         ws = null;
       }
