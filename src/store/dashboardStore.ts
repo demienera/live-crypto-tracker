@@ -18,16 +18,16 @@ interface DashboardState {
   tickers: Record<string, TickerInfo>;
   trades: TradeInfo[];
   selectedSymbol: string;
-  updateTickers: (data: BinanceTickerData) => void;
+  updateTicker: (data: BinanceTickerData) => void;
   addTrade: (data: BinanceTradeData) => void;
   setSelectedSymbol: (symbol: string) => void;
 }
 
-export const useDashboardState = create<DashboardState>((set) => ({
+export const useDashboardStore = create<DashboardState>((set) => ({
   tickers: {},
   trades: [],
   selectedSymbol: 'BTCUSDT',
-  updateTickers: (data) =>
+  updateTicker: (data) =>
     set((state) => ({
       tickers: {
         ...state.tickers,
