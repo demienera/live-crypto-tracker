@@ -46,6 +46,7 @@ export const useBinanceWebSocket = (streams: string[]) => {
       intervalClose = false;
 
       const socket = new WebSocket(BINANCE_WS_URL);
+      ws = socket;
       socket.onopen = () => {
         const currentStreams = streamsRef.current;
         if (currentStreams.length > 0) {
@@ -65,9 +66,27 @@ export const useBinanceWebSocket = (streams: string[]) => {
           if (message.result !== undefined) return;
 
           if (message.e === '24hrTicker') {
-            updateTickerRef.current(message as BinanceTickerData);
+            const ticker: BinanceTickerData = {
+              event: message.e,
+              eventTime: message.E,
+              symbol: message.s,
+              priceChange: message.p,
+              priceChangePercent: message.P,
+              lastPrice: message.c,
+            };
+            updateTickerRef.current(ticker);
           } else if (message.e === 'trade') {
-            addTradeRef.current(message as BinanceTradeData);
+            const trade: BinanceTradeData = {
+              event: message.e,
+              eventTime: message.E,
+              symbol: message.s,
+              tradeId: message.t,
+              price: message.p,
+              quantity: message.q,
+              buyerOrderId: message.b,
+              time: message.T,
+            };
+            addTradeRef.current(trade);
           }
         } catch (error) {
           console.error('Failed to parse WebSocket message', error);
