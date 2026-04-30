@@ -1,7 +1,9 @@
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Hello.</p>
+    <main>
+      <DashboardWrapper />
     </main>
   );
 }
