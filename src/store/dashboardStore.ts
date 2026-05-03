@@ -11,7 +11,8 @@ interface TradeInfo {
   price: string;
   quantity: string;
   time: number;
-  isBayer: boolean;
+  isBuyer: boolean;
+  tradeId: number;
 }
 
 interface ChartPoint {
@@ -59,10 +60,11 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         price: data.price,
         quantity: data.quantity,
         time: data.time,
-        isBayer: data.buyerOrderId === data.tradeId,
+        isBuyer: data.isBuyer,
+        tradeId: data.tradeId,
       };
 
-      const updateTrades = [newTrade, ...state.trades].slice(0, 50);
+      const updateTrades = [newTrade, ...state.trades].slice(0, 30);
       return {
         trades: updateTrades,
       };
