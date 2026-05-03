@@ -17,6 +17,9 @@ export const useBinanceWebSocket = (streams: string[]) => {
   const addTradeRef = useRef(addTrade);
   const addChartPointRef = useRef(addChartPoint);
 
+  const lastTickerTimeBySymbol = useRef<Record<string, number>>({});
+  const THROTTLE_MS = 500;
+
   useEffect(() => {
     streamsRef.current = streams;
     updateTickerRef.current = updateTicker;
@@ -71,18 +74,26 @@ export const useBinanceWebSocket = (streams: string[]) => {
           if (message.result !== undefined) return;
 
           if (message.e === '24hrTicker') {
-            const ticker: BinanceTickerData = {
-              event: message.e,
-              eventTime: message.E,
-              symbol: message.s,
-              priceChange: message.p,
-              priceChangePercent: message.P,
-              lastPrice: message.c,
-            };
-            updateTickerRef.current(ticker);
+            const symbol = message.s;
+            const now = Date.now();
+            const lastTime = lastTickerTimeBySymbol.current[symbol] || 0;
 
-            if (ticker.symbol === useDashboardStore.getState().selectedSymbol) {
-              addChartPointRef.current(ticker.lastPrice);
+            if (now - lastTime >= THROTTLE_MS) {
+              const ticker: BinanceTickerData = {
+                event: message.e,
+                eventTime: message.E,
+                symbol,
+                priceChange: message.p,
+                priceChangePercent: message.P,
+                lastPrice: message.c,
+              };
+              updateTickerRef.current(ticker);
+
+              if (ticker.symbol === useDashboardStore.getState().selectedSymbol) {
+                addChartPointRef.current(ticker.lastPrice);
+              }
+
+              lastTickerTimeBySymbol.current[symbol] = now;
             }
           } else if (message.e === 'trade') {
             const trade: BinanceTradeData = {
@@ -94,8 +105,13 @@ export const useBinanceWebSocket = (streams: string[]) => {
               quantity: message.q,
               buyerOrderId: message.b,
               time: message.T,
+              isBuyer: !message.m,
             };
-            addTradeRef.current(trade);
+            const amount = parseFloat(trade.price) * parseFloat(trade.quantity);
+
+            if (amount >= 10) {
+              addTradeRef.current(trade);
+            }
           }
         } catch (error) {
           console.error('Failed to parse WebSocket message', error);
