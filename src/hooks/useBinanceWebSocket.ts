@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDashboardStore } from '@/store/dashboardStore';
 import type { BinanceTickerData, BinanceTradeData } from '@/types/binance';
 
@@ -19,6 +19,9 @@ export const useBinanceWebSocket = (streams: string[]) => {
 
   const lastTickerTimeBySymbol = useRef<Record<string, number>>({});
   const THROTTLE_MS = 500;
+
+  const [connectionError, setConnectionError] = useState(false);
+  const [errorId, setErrorId] = useState(0);
 
   useEffect(() => {
     streamsRef.current = streams;
@@ -56,6 +59,7 @@ export const useBinanceWebSocket = (streams: string[]) => {
       ws = socket;
 
       socket.onopen = () => {
+        setConnectionError(false);
         const currentStreams = streamsRef.current;
         if (currentStreams.length > 0) {
           socket.send(
@@ -118,15 +122,18 @@ export const useBinanceWebSocket = (streams: string[]) => {
         }
       };
 
-      socket.onerror = (error) => {
-        console.error('WebSocket error', error);
+      socket.onerror = () => {
+        setConnectionError(true);
+        setErrorId((prev) => prev + 1);
       };
 
       socket.onclose = () => {
-        if (intentionalClose) return;
-
-        console.log('WebSocket disconnected, trying to reconnect in', RECONNECT_DELAY);
-        reconnectTimer = setTimeout(connect, RECONNECT_DELAY);
+        if (!intentionalClose) {
+          setConnectionError(true);
+          setErrorId((prev) => prev + 1);
+          console.log('WebSocket disconnected, trying to reconnect in', RECONNECT_DELAY);
+          reconnectTimer = setTimeout(connect, RECONNECT_DELAY);
+        }
       };
     };
 
@@ -146,4 +153,6 @@ export const useBinanceWebSocket = (streams: string[]) => {
       }
     };
   }, [streams]);
+
+  return { connectionError, errorId };
 };

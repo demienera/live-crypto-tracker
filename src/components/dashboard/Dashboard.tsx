@@ -6,6 +6,7 @@ import { useDashboardStore } from '@/store/dashboardStore';
 import { TickerCard } from './TickerCard';
 import { MiniChart } from './MiniChart';
 import { TradeTable } from './TradeTable';
+import { ErrorAlert } from '../ErrorAlert';
 
 const SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'ADAUSDT'];
 
@@ -19,11 +20,17 @@ export default function Dashboard() {
     return [...tickerStreams, `${selectedSymbol.toLowerCase()}@trade`];
   }, [selectedSymbol]);
 
-  useBinanceWebSocket(streams);
+  const { connectionError, errorId } = useBinanceWebSocket(streams);
 
   return (
     <div className="min-h-screen bg-[#0d0f12] text-white p-6 font-sans antialiased">
       <div className="max-w-6xl mx-auto space-y-8">
+        {connectionError && (
+          <ErrorAlert
+            key={errorId}
+            message="WebSocket connection failed. Please refresh or wait for automatic reconnection."
+          />
+        )}
         <div className="text-center space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-[#e4e7ed]">Live Crypto Tracker</h1>
           <p className="text-[#7a8194] text-sm font-medium">
