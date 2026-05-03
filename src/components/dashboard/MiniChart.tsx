@@ -15,15 +15,15 @@ export const MiniChart = ({ symbol }: { symbol: string }) => {
   const chartData = useDashboardStore((state) => state.chartData);
 
   return (
-    <Card className="bg-[#1a1d23] border-[#2b3139] rounded-xl shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="bg-[#1a1d23] border-[#2b3139] rounded-xl shadow-sm flex flex-col h-[350px]">
+      <CardHeader className="pb-2 shrink-0">
         <CardTitle className="text-sm font-medium uppercase tracking-wider text-[#7a8194]">
           {symbol.replace('USDT', '/USDT')} · Price
         </CardTitle>
       </CardHeader>
-      <CardContent className="h-75 w-full p-4">
+      <CardContent className="flex-1 min-h-0 p-4">
         {chartData.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-[#7a8194] text-sm">
+          <div className="h-full flex items-center justify-center text-[#7a8194] text-sm">
             Waiting for data...
           </div>
         ) : (
