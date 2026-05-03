@@ -14,10 +14,18 @@ interface TradeInfo {
   isBayer: boolean;
 }
 
+interface ChartPoint {
+  time: number;
+  price: number;
+}
+
 interface DashboardState {
   tickers: Record<string, TickerInfo>;
   trades: TradeInfo[];
   selectedSymbol: string;
+  chartData: ChartPoint[];
+  addChartPoint: (price: string) => void;
+  clearChartData: () => void;
   updateTicker: (data: BinanceTickerData) => void;
   addTrade: (data: BinanceTradeData) => void;
   setSelectedSymbol: (symbol: string) => void;
@@ -27,6 +35,14 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   tickers: {},
   trades: [],
   selectedSymbol: 'BTCUSDT',
+  chartData: [],
+  addChartPoint: (price) =>
+    set((state) => {
+      const newPoint = { time: Date.now(), price: parseFloat(price) };
+      const newData = [...state.chartData, newPoint].slice(-200);
+      return { chartData: newData };
+    }),
+  clearChartData: () => set({ chartData: [] }),
   updateTicker: (data) =>
     set((state) => ({
       tickers: {
@@ -51,5 +67,5 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         trades: updateTrades,
       };
     }),
-  setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol, trades: [] }),
+  setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol, trades: [], chartData: [] }),
 }));

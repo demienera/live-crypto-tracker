@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useBinanceWebSocket } from '@/hooks/useBinanceWebSocket';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { TickerCard } from './TickerCard';
+import { MiniChart } from './MiniChart';
 
 const SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'ADAUSDT'];
 
@@ -38,6 +39,12 @@ export default function Dashboard() {
               onClick={() => setSelectedSymbol(symbol)}
             />
           ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <MiniChart symbol={selectedSymbol} />
+          </div>
         </div>
       </div>
     </div>

@@ -10,15 +10,18 @@ const RECONNECT_DELAY = 5000;
 export const useBinanceWebSocket = (streams: string[]) => {
   const updateTicker = useDashboardStore((s) => s.updateTicker);
   const addTrade = useDashboardStore((s) => s.addTrade);
+  const addChartPoint = useDashboardStore((s) => s.addChartPoint);
 
   const streamsRef = useRef(streams);
   const updateTickerRef = useRef(updateTicker);
   const addTradeRef = useRef(addTrade);
+  const addChartPointRef = useRef(addChartPoint);
 
   useEffect(() => {
     streamsRef.current = streams;
     updateTickerRef.current = updateTicker;
     addTradeRef.current = addTrade;
+    addChartPointRef.current = addChartPoint;
   });
 
   useEffect(() => {
@@ -77,6 +80,10 @@ export const useBinanceWebSocket = (streams: string[]) => {
               lastPrice: message.c,
             };
             updateTickerRef.current(ticker);
+
+            if (ticker.symbol === useDashboardStore.getState().selectedSymbol) {
+              addChartPointRef.current(ticker.lastPrice);
+            }
           } else if (message.e === 'trade') {
             const trade: BinanceTradeData = {
               event: message.e,
