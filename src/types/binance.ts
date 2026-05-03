@@ -16,4 +16,5 @@ export interface BinanceTradeData {
   quantity: string;
   buyerOrderId: number;
   time: number;
+  isBuyer: boolean;
 }
